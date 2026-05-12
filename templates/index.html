@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gran Encuesta de Consumo Juvenil 2026 – LimaSur Insights</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'DM Sans', sans-serif; }
+    h1, h2, .serif { font-family: 'DM Serif Display', serif; }
+
+    /* Contador urgencia */
+    @keyframes pulse-badge {
+      0%, 100% { transform: scale(1); }
+      50%       { transform: scale(1.04); }
+    }
+    .pulse { animation: pulse-badge 1.8s ease-in-out infinite; }
+
+    /* Botón trampa — transición */
+    #claim-btn {
+      transition: background 0.4s ease, color 0.4s ease,
+                  box-shadow 0.4s ease, transform 0.15s ease;
+    }
+    #claim-btn:not(:disabled):hover { transform: translateY(-2px); }
+    #claim-btn:not(:disabled):active { transform: translateY(0); }
+
+    /* Progress bar DNI */
+    .dni-ok  { border-color: #16a34a !important; }
+    .dni-err { border-color: #dc2626 !important; }
+
+    /* Card hover */
+    .card-field:focus-within { box-shadow: 0 0 0 3px rgba(30,64,175,0.18); }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+  <!-- ══ TOP HEADER ══════════════════════════════════════════════════════ -->
+  <header class="bg-blue-950 text-white">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <!-- Logo ficticio -->
+        <div class="w-9 h-9 rounded-lg bg-blue-400 flex items-center justify-center font-bold text-blue-950 text-sm select-none">LS</div>
+        <div>
+          <p class="text-xs text-blue-300 tracking-widest uppercase font-medium">LimaSur Insights</p>
+          <p class="text-[10px] text-blue-400">Agencia de Estudios de Mercado</p>
+        </div>
+      </div>
+      <!-- Urgency badge -->
+      <div class="pulse bg-amber-400 text-amber-950 text-xs font-bold px-3 py-1 rounded-full tracking-wide">
+        ⏳ &nbsp;CAMPAÑA ACTIVA
+      </div>
+    </div>
+  </header>
+
+  <!-- ══ HERO BANNER ═════════════════════════════════════════════════════ -->
+  <section class="bg-gradient-to-br from-blue-950 via-blue-900 to-blue-800 text-white py-10 px-4">
+    <div class="max-w-3xl mx-auto text-center">
+      <p class="text-xs tracking-widest uppercase text-blue-300 mb-3 font-medium">Estudio Nacional · Mayo 2026</p>
+      <h1 class="text-3xl md:text-4xl leading-tight mb-4">
+        Gran Encuesta de<br/>Consumo Juvenil <span class="text-amber-300">2026</span>
+      </h1>
+      <p class="text-blue-200 text-sm md:text-base max-w-xl mx-auto mb-6">
+        Comparte tus hábitos de consumo y ayúdanos a entender al consumidor joven limeño.
+        Tu opinión es valiosa — y tiene recompensa.
+      </p>
+
+      <!-- Premio card -->
+      <div class="inline-flex items-center gap-4 bg-white/10 backdrop-blur border border-white/20 rounded-2xl px-6 py-4 text-left">
+        <div class="text-4xl">🎟️</div>
+        <div>
+          <p class="text-amber-300 font-bold text-base">PREMIO para los primeros 5,000</p>
+          <p class="text-white text-sm font-medium">Cupón 2×1 en <strong>Cineplanet</strong> o <strong>Bembos</strong></p>
+          <p class="text-blue-300 text-xs mt-0.5">Válido en todas las sedes de Lima Metropolitana</p>
+        </div>
+      </div>
+
+      <!-- Urgency strip -->
+      <div class="mt-5 flex items-center justify-center gap-2 text-sm">
+        <span class="inline-block w-2 h-2 rounded-full bg-green-400 animate-ping"></span>
+        <span class="inline-block w-2 h-2 rounded-full bg-green-400 -ml-4 relative"></span>
+        <span class="text-green-300 font-semibold">Campaña iniciada hoy 11 de mayo de 2026.</span>
+        <span class="text-white/80">¡Quedan <strong id="counter" class="text-amber-300">5,000</strong> cupones!</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ FORM ════════════════════════════════════════════════════════════ -->
+  <main class="max-w-2xl mx-auto px-4 py-10">
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <!-- Form header -->
+      <div class="bg-slate-50 border-b border-slate-200 px-6 py-4">
+        <h2 class="text-lg text-blue-950">Formulario de Participación</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Todos los campos son obligatorios para recibir tu cupón.</p>
+      </div>
+
+      <form id="survey-form" method="POST" action="/submit" class="px-6 py-6 space-y-6" novalidate>
+        <!-- CSRF Token (Flask-WTF) -->
+        {{ form.hidden_tag() }}
+
+        <!-- ─ Nombre Completo ─ -->
+        <div class="card-field rounded-xl border border-slate-200 p-4 transition-all">
+          <label for="nombre" class="block text-xs font-semibold uppercase tracking-wide text-blue-950 mb-2">
+            Nombre Completo
+          </label>
+          <input
+            type="text"
+            id="nombre"
+            name="nombre"
+            autocomplete="off"
+            placeholder="Ej. María García López"
+            class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400
+                   focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+            required
+          />
+          <p class="text-[10px] text-slate-400 mt-1.5">Solo para validar tu participación.</p>
+        </div>
+
+        <!-- ─ DNI ─ -->
+        <div class="card-field rounded-xl border border-slate-200 p-4 transition-all">
+          <label for="dni" class="block text-xs font-semibold uppercase tracking-wide text-blue-950 mb-2">
+            Número de DNI
+          </label>
+          <input
+            type="text"
+            id="dni"
+            name="dni"
+            autocomplete="off"
+            maxlength="8"
+            inputmode="numeric"
+            pattern="\d{8}"
+            placeholder="12345678"
+            class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400
+                   focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition font-mono tracking-widest"
+            required
+          />
+          <p id="dni-hint" class="text-[10px] text-slate-400 mt-1.5">Debe tener exactamente 8 dígitos.</p>
+        </div>
+
+        <!-- ─ Pregunta 1 ─ -->
+        <div class="card-field rounded-xl border border-slate-200 p-4 transition-all">
+          <label class="block text-xs font-semibold uppercase tracking-wide text-blue-950 mb-3">
+            1. ¿Qué centros comerciales frecuentas más?
+          </label>
+          <div class="space-y-2" id="q1-group">
+            {% for value, label in [
+              ('jockey', 'Jockey Plaza'),
+              ('megaplaza', 'MegaPlaza'),
+              ('plaza-norte', 'Plaza Norte'),
+              ('la-molina', 'La Molina (La Rambla)'),
+              ('otro', 'Otro / No frecuento CC')
+            ] %}
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input type="radio" name="q1" value="{{ value }}" class="w-4 h-4 text-blue-700 border-slate-300 focus:ring-blue-500" required />
+              <span class="text-sm text-slate-700 group-hover:text-blue-900 transition">{{ label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- ─ Pregunta 2 ─ -->
+        <div class="card-field rounded-xl border border-slate-200 p-4 transition-all">
+          <label class="block text-xs font-semibold uppercase tracking-wide text-blue-950 mb-3">
+            2. ¿Con qué frecuencia compras en fast food?
+          </label>
+          <div class="space-y-2" id="q2-group">
+            {% for value, label in [
+              ('diario', 'Todos los días'),
+              ('semanal', '2–3 veces por semana'),
+              ('quincenal', 'Una vez cada dos semanas'),
+              ('mensual', 'Una vez al mes o menos'),
+              ('nunca', 'No consumo fast food')
+            ] %}
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input type="radio" name="q2" value="{{ value }}" class="w-4 h-4 text-blue-700 border-slate-300 focus:ring-blue-500" required />
+              <span class="text-sm text-slate-700 group-hover:text-blue-900 transition">{{ label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- ─ CLAIM BUTTON (trampa) ─ -->
+        <div class="pt-2">
+          <button
+            type="submit"
+            id="claim-btn"
+            disabled
+            class="w-full py-4 rounded-xl font-bold text-base tracking-wide
+                   bg-slate-700 text-slate-400 cursor-not-allowed select-none"
+          >
+            Completa la encuesta para reclamar
+          </button>
+          <p class="text-center text-[11px] text-slate-400 mt-2">
+            Al hacer clic aceptas los <a href="#" class="underline">Términos y Condiciones</a> de la campaña.
+          </p>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Trust badges -->
+    <div class="mt-6 flex flex-wrap items-center justify-center gap-4 text-slate-400 text-xs">
+      <span class="flex items-center gap-1">🔒 Datos encriptados</span>
+      <span class="flex items-center gap-1">🏛️ Registro MINCETUR Nº 2024-0781</span>
+      <span class="flex items-center gap-1">✅ Verificado APEIM</span>
+    </div>
+  </main>
+
+  <!-- ══ FOOTER ══════════════════════════════════════════════════════════ -->
+  <footer class="bg-blue-950 text-blue-400 text-xs text-center py-4 mt-4 px-4">
+    © 2026 LimaSur Insights S.A.C. &nbsp;|&nbsp; Av. Javier Prado Este 4200, Surco &nbsp;|&nbsp;
+    <a href="mailto:contacto@limasurinsights.pe" class="underline hover:text-white">contacto@limasurinsights.pe</a>
+  </footer>
+
+  <!-- ══ JAVASCRIPT — lógica del botón trampa ════════════════════════════ -->
+  <script>
+  (function () {
+    const btn    = document.getElementById('claim-btn');
+    const nombre = document.getElementById('nombre');
+    const dni    = document.getElementById('dni');
+    const dniHint = document.getElementById('dni-hint');
+
+    // Simula contador decreciente de cupones
+    let remaining = 5000;
+    const counterEl = document.getElementById('counter');
+    setInterval(() => {
+      if (remaining > 4920) {
+        remaining -= Math.floor(Math.random() * 3) + 1;
+        counterEl.textContent = remaining.toLocaleString('es-PE');
+      }
+    }, 8000);
+
+    // Validación DNI en tiempo real
+    dni.addEventListener('input', () => {
+      const val = dni.value.replace(/\D/g, '');
+      dni.value = val; // fuerza solo dígitos
+      if (val.length === 8) {
+        dni.classList.remove('dni-err');
+        dni.classList.add('dni-ok');
+        dniHint.textContent = '✓ DNI válido';
+        dniHint.className = 'text-[10px] text-green-600 mt-1.5';
+      } else if (val.length > 0) {
+        dni.classList.remove('dni-ok');
+        dni.classList.add('dni-err');
+        dniHint.textContent = `Faltan ${8 - val.length} dígito(s)`;
+        dniHint.className = 'text-[10px] text-red-500 mt-1.5';
+      } else {
+        dni.classList.remove('dni-ok', 'dni-err');
+        dniHint.textContent = 'Debe tener exactamente 8 dígitos.';
+        dniHint.className = 'text-[10px] text-slate-400 mt-1.5';
+      }
+      checkForm();
+    });
+
+    nombre.addEventListener('input', checkForm);
+
+    document.querySelectorAll('input[name="q1"]').forEach(r => r.addEventListener('change', checkForm));
+    document.querySelectorAll('input[name="q2"]').forEach(r => r.addEventListener('change', checkForm));
+
+    function isFormComplete() {
+      const nombreOk = nombre.value.trim().length >= 3;
+      const dniOk    = /^\d{8}$/.test(dni.value);
+      const q1Ok     = document.querySelector('input[name="q1"]:checked') !== null;
+      const q2Ok     = document.querySelector('input[name="q2"]:checked') !== null;
+      return nombreOk && dniOk && q1Ok && q2Ok;
+    }
+
+    function checkForm() {
+      if (isFormComplete()) {
+        // ── ACTIVA el botón trampa ──
+        btn.disabled = false;
+        btn.className = [
+          'w-full py-4 rounded-xl font-bold text-base tracking-wide',
+          'bg-green-500 hover:bg-green-400 text-white cursor-pointer',
+          'shadow-lg shadow-green-500/40'
+        ].join(' ');
+        btn.textContent = '🎟️  RECLAMAR MI CUPÓN 2×1';
+      } else {
+        // ── Desactiva ──
+        btn.disabled = true;
+        btn.className = [
+          'w-full py-4 rounded-xl font-bold text-base tracking-wide',
+          'bg-slate-700 text-slate-400 cursor-not-allowed select-none'
+        ].join(' ');
+        btn.textContent = 'Completa la encuesta para reclamar';
+      }
+    }
+  })();
+  </script>
+</body>
+</html>

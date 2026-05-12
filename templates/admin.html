@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard · Admin Métricas VMT</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=DM+Mono&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'DM Sans', sans-serif; background: #0f172a; color: #f1f5f9; }
+    .mono { font-family: 'DM Mono', monospace; }
+    @keyframes count-up { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+    .count { animation: count-up 0.5s ease forwards; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <div class="max-w-4xl mx-auto px-4 py-12">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-10">
+      <div>
+        <p class="text-xs text-slate-500 mono uppercase tracking-widest mb-1">LimaSur Insights · Admin Panel</p>
+        <h1 class="text-2xl font-bold text-white">Dashboard de Métricas</h1>
+        <p class="text-xs text-slate-400 mt-0.5">Experimento Quishing · Gran Encuesta 2026</p>
+      </div>
+      <div class="bg-green-500/10 border border-green-500/30 text-green-400 text-xs px-3 py-1.5 rounded-full mono">
+        ● LIVE
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
+
+      <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6">
+        <p class="text-xs text-slate-400 uppercase tracking-widest mb-2">Total de Escaneos</p>
+        <p class="text-5xl font-bold text-white count" id="kpi-scans">{{ total_scans }}</p>
+        <p class="text-xs text-slate-500 mt-2">Visitas al index (carga de página)</p>
+      </div>
+
+      <div class="bg-red-950/40 border border-red-800/50 rounded-2xl p-6">
+        <p class="text-xs text-red-400 uppercase tracking-widest mb-2">Total de Víctimas</p>
+        <p class="text-5xl font-bold text-red-300 count" id="kpi-clicks">{{ vulnerable_clicks }}</p>
+        <p class="text-xs text-slate-500 mt-2">Clics en "Reclamar mi cupón"</p>
+      </div>
+
+      <div class="bg-amber-950/30 border border-amber-700/40 rounded-2xl p-6">
+        <p class="text-xs text-amber-400 uppercase tracking-widest mb-2">% Vulnerabilidad</p>
+        <p class="text-5xl font-bold text-amber-300 count" id="kpi-pct">{{ vulnerability_pct }}%</p>
+        <p class="text-xs text-slate-500 mt-2">Clics / Escaneos totales</p>
+      </div>
+
+    </div>
+
+    <!-- Visual bar -->
+    <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 mb-6">
+      <p class="text-sm font-semibold text-slate-300 mb-4">Tasa de Vulnerabilidad Cognitiva</p>
+      <div class="w-full bg-slate-700 rounded-full h-5 overflow-hidden">
+        <div
+          id="vuln-bar"
+          class="h-5 rounded-full transition-all duration-1000"
+          style="width: {{ vulnerability_pct }}%;
+                 background: linear-gradient(90deg, #f59e0b, #ef4444);"
+        ></div>
+      </div>
+      <div class="flex justify-between text-xs text-slate-500 mt-2">
+        <span>0 %</span>
+        <span class="text-amber-400 font-semibold">{{ vulnerability_pct }}% cayeron en la trampa</span>
+        <span>100 %</span>
+      </div>
+    </div>
+
+    <!-- Auto-refresh note -->
+    <p class="text-center text-slate-600 text-xs mono mb-6">
+      Se actualizará automáticamente cada 15 s · Usando endpoint <code>/admin-metrics-vmt/api</code>
+    </p>
+
+    <!-- Raw JSON -->
+    <details class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+      <summary class="text-xs text-slate-400 cursor-pointer select-none mono">Ver JSON raw</summary>
+      <pre class="mt-3 text-xs text-green-400 mono overflow-auto" id="raw-json">{{
+  "total_scans": {{ total_scans }},
+  "vulnerable_clicks": {{ vulnerable_clicks }},
+  "vulnerability_pct": {{ vulnerability_pct }}
+}}</pre>
+    </details>
+
+  </div>
+
+  <script>
+  // Auto-refresh cada 15 s (preserva el token de admin en la query string)
+  const token = new URLSearchParams(window.location.search).get('token') || '';
+
+  async function refresh() {
+    try {
+      const res  = await fetch(`/admin-metrics-vmt/api?token=${encodeURIComponent(token)}`);
+      if (!res.ok) return;
+      const d = await res.json();
+      document.getElementById('kpi-scans').textContent  = d.total_scans;
+      document.getElementById('kpi-clicks').textContent = d.vulnerable_clicks;
+      document.getElementById('kpi-pct').textContent    = d.vulnerability_pct + '%';
+      document.getElementById('vuln-bar').style.width   = d.vulnerability_pct + '%';
+      document.getElementById('raw-json').textContent   =
+        JSON.stringify(d, null, 2);
+    } catch (e) { /* silencioso */ }
+  }
+
+  setInterval(refresh, 15000);
+  </script>
+
+</body>
+</html>
