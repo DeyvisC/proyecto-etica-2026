@@ -78,11 +78,11 @@
     <!-- Raw JSON -->
     <details class="bg-slate-900 border border-slate-700 rounded-xl p-4">
       <summary class="text-xs text-slate-400 cursor-pointer select-none mono">Ver JSON raw</summary>
-      <pre class="mt-3 text-xs text-green-400 mono overflow-auto" id="raw-json">{{
-  "total_scans": {{ total_scans }},
-  "vulnerable_clicks": {{ vulnerable_clicks }},
-  "vulnerability_pct": {{ vulnerability_pct }}
-}}</pre>
+      <pre class="mt-3 text-xs text-green-400 mono overflow-auto" id="raw-json">{
+  "total_scans": {{ total_scans|safe }},
+  "vulnerable_clicks": {{ vulnerable_clicks|safe }},
+  "vulnerability_pct": {{ vulnerability_pct|safe }}
+}</pre>
     </details>
 
   </div>
