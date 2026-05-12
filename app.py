@@ -39,11 +39,11 @@ csp = {
 Talisman(
     app,
     content_security_policy=csp,
-    x_frame_options="DENY",
+    frame_options="DENY",             # Solo cambia x_frame_options por frame_options
     strict_transport_security=True,
     strict_transport_security_max_age=31536000,
     referrer_policy="no-referrer",
-    force_https=False,           # Render maneja HTTPS externamente
+    force_https=False,               # Render maneja HTTPS externamente
 )
 
 # ── Ruta y helpers de métricas ────────────────────────────────────────────────
@@ -89,6 +89,12 @@ def require_admin(f):
     return decorated
 
 # ── Rutas ─────────────────────────────────────────────────────────────────────
+
+@app.route("/ping")
+def ping():
+    """Ruta para Cron-job / UptimeRobot. 
+    Mantiene la app despierta sin afectar las métricas de visitas reales."""
+    return "OK", 200
 
 @app.route("/")
 def index():
