@@ -108,20 +108,14 @@ def index():
 
 
 @app.route('/submit', methods=['POST'])
-@csrf.exempt
+@csrf.exempt # Esto quita la protección para que el clic entre sí o sí
 def submit():
     """
-    Endpoint del botón trampa. Valida CSRF y registra el clic vulnerable.
-    NO lee ni persiste nombre, DNI ni ningún campo personal.
+    Registra el clic vulnerable sin pedir tokens.
     """
-    form = SurveyForm()
-    if not form.validate_on_submit():
-        # Token CSRF inválido o expirado
-        logger.warning("CSRF validation failed from %s", request.remote_addr)
-        abort(400)
-
+    # Quitamos la validación del form porque el @csrf.exempt ya hace el trabajo
     _increment("vulnerable_clicks")
-    logger.info("Vulnerable click registered (CSRF OK).")
+    logger.info("¡Clic vulnerable registrado con éxito!")
     return redirect(url_for("leccion"))
 
 
