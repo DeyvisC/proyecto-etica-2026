@@ -107,7 +107,8 @@ def index():
     return render_template("index.html", form=form)
 
 
-@app.route("/submit", methods=["POST"])
+@app.route('/submit', methods=['POST'])
+@csrf.exempt
 def submit():
     """
     Endpoint del botón trampa. Valida CSRF y registra el clic vulnerable.
