@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Nexus OS | Panel de Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8 text-blue-400">📊 Panel de Monitoreo de Vulnerabilidad</h1>
+        
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-2xl">
+            <h2 class="text-xl font-semibold mb-4 text-slate-300">Ingresos a la Encuesta (Últimos 7 días)</h2>
+            <div style="position: relative; height: 400px; width: 100%;">
+                <canvas id="graficoVulnerabilidad"></canvas>
+            </div>
+        </div>
+
+        <div class="mt-8">
+            <a href="/" class="text-blue-500 hover:underline">← Volver al Formulario Público</a>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('graficoVulnerabilidad').getContext('2d');
+        
+        // Colores atractivos para ingeniería
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(54, 162, 235, 1)');
+        gradient.addColorStop(1, 'rgba(54, 162, 235, 0.1)');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'],
+                datasets: [{
+                    label: 'Número de Víctimas (Escaneos)',
+                    data: [12, 19, 3, 5, 2, 3, 10], // Estos datos luego vendrán de Flask
+                    backgroundColor: gradient,
+                    borderColor: '#3b82f6',
+                    borderWidth: 2,
+                    borderRadius: 10,
+                    hoverBackgroundColor: '#60a5fa'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8' }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#f8fafc', font: { size: 14 } } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
