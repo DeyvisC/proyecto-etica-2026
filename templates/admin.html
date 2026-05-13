@@ -79,23 +79,59 @@
     
       <script>
   // Auto-refresh cada 15 s (preserva el token de admin en la query string)
-  const token = new URLSearchParams(window.location.search).get('token') || '';
+const ctx = document.getElementById('graficoVulnerabilidad').getContext('2d');
+let miGrafico;
 
-  async function refresh() {
+function inicializarGrafico(scans, clicks) {
+    miGrafico = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Escaneos (Visitas)', 'Víctimas (Clics)'],
+            datasets: [{
+                label: 'Interacciones',
+                data: [scans, clicks],
+                backgroundColor: ['rgba(54, 162, 235, 0.5)', 'rgba(239, 68, 68, 0.5)'],
+                borderColor: ['#3b82f6', '#ef4444'],
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { color: '#94a3b8' } },
+                x: { ticks: { color: '#94a3b8' } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+}
+
+// Inicializamos el gráfico con los datos que vienen de Flask al cargar
+inicializarGrafico({{ total_scans }}, {{ vulnerable_clicks }});
+
+async function refresh() {
     try {
-      const res  = await fetch(`/admin-metrics-vmt/api?token=${encodeURIComponent(token)}`);
+      const res = await fetch(`/admin-metrics-vmt/api?token=${encodeURIComponent(token)}`);
       if (!res.ok) return;
       const d = await res.json();
+      
+      // Actualizar números
       document.getElementById('kpi-scans').textContent  = d.total_scans;
       document.getElementById('kpi-clicks').textContent = d.vulnerable_clicks;
       document.getElementById('kpi-pct').textContent    = d.vulnerability_pct + '%';
       document.getElementById('vuln-bar').style.width   = d.vulnerability_pct + '%';
-      document.getElementById('raw-json').textContent   =
-        JSON.stringify(d, null, 2);
-    } catch (e) { /* silencioso */ }
-  }
+      
+      // ACTUALIZAR GRÁFICO
+      miGrafico.data.datasets[0].data = [d.total_scans, d.vulnerable_clicks];
+      miGrafico.update(); // Esto hace que las barras se muevan solas
 
-  setInterval(refresh, 15000);
+      document.getElementById('raw-json').textContent = JSON.stringify(d, null, 2);
+    } catch (e) { }
+}
+
+setInterval(refresh, 15000);
   </script>
 
 </body>
