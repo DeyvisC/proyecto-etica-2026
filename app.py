@@ -29,21 +29,22 @@ csrf = CSRFProtect(app)
 csp = {
     "default-src": "'self'",
     "style-src":   ["'self'", "https://cdn.tailwindcss.com", "'unsafe-inline'"],
-    "script-src":  ["'self'", "https://cdn.tailwindcss.com", "'unsafe-inline'"],
+    "script-src":  ["'self'", "https://cdn.tailwindcss.com", "https://cdn.jsdelivr.net", "'unsafe-inline'"], 
     "font-src":    ["'self'", "https://fonts.gstatic.com", "https://fonts.googleapis.com"],
     "img-src":     ["'self'", "data:"],
     "connect-src": "'self'",
     "frame-ancestors": "'none'",
 }
 
+# ── Activación de Talisman (Usa el csp definido arriba) ────────────────────────
 Talisman(
     app,
     content_security_policy=csp,
-    frame_options="DENY",             # Solo cambia x_frame_options por frame_options
+    frame_options="DENY",
     strict_transport_security=True,
     strict_transport_security_max_age=31536000,
     referrer_policy="no-referrer",
-    force_https=False,               # Render maneja HTTPS externamente
+    force_https=False,
 )
 
 # ── Ruta y helpers de métricas ────────────────────────────────────────────────
@@ -130,12 +131,14 @@ def admin_metrics():
     metrics = _load_metrics()
     scans   = metrics.get("total_scans", 0)
     clicks  = metrics.get("vulnerable_clicks", 0)
-    pct     = round((clicks / scans * 100), 1) if scans > 0 else 0.0
+    
+    pct = round((clicks / scans * 100), 1) if scans > 0 else 0.0
+    
     return render_template(
-        "admin.html",
-        total_scans=scans,
-        vulnerable_clicks=clicks,
-        vulnerability_pct=pct,
+        "admin.html", 
+        total_scans=scans, 
+        vulnerable_clicks=clicks, 
+        vulnerability_pct=pct
     )
 
 
