@@ -54,40 +54,30 @@
 
     <!-- Visual bar -->
     <div class="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 mb-6">
-      <p class="text-sm font-semibold text-slate-300 mb-4">Tasa de Vulnerabilidad Cognitiva</p>
-      <div class="w-full bg-slate-700 rounded-full h-5 overflow-hidden">
-        <div
-          id="vuln-bar"
-          class="h-5 rounded-full transition-all duration-1000"
-          style="width: {{ vulnerability_pct }}%;
-                 background: linear-gradient(90deg, #f59e0b, #ef4444);"
-        ></div>
-      </div>
-      <div class="flex justify-between text-xs text-slate-500 mt-2">
-        <span>0 %</span>
-        <span class="text-amber-400 font-semibold">{{ vulnerability_pct }}% cayeron en la trampa</span>
-        <span>100 %</span>
+      <p class="text-sm font-semibold text-slate-300 mb-4">Gráfico Comparativo de Impacto</p>
+      <div style="position: relative; height: 300px; width: 100%;">
+        <canvas id="graficoVulnerabilidad"></canvas>
       </div>
     </div>
-
-    <!-- Auto-refresh note -->
-    <p class="text-center text-slate-600 text-xs mono mb-6">
-      Se actualizará automáticamente cada 15 s · Usando endpoint <code>/admin-metrics-vmt/api</code>
-    </p>
-
-    <!-- Raw JSON -->
-    <details class="bg-slate-900 border border-slate-700 rounded-xl p-4">
-      <summary class="text-xs text-slate-400 cursor-pointer select-none mono">Ver JSON raw</summary>
-      <pre class="mt-3 text-xs text-green-400 mono overflow-auto" id="raw-json">{
-  "total_scans": {{ total_scans|safe }},
-  "vulnerable_clicks": {{ vulnerable_clicks|safe }},
-  "vulnerability_pct": {{ vulnerability_pct|safe }}
-}</pre>
-    </details>
-
-  </div>
-
-  <script>
+    
+        <!-- Auto-refresh note -->
+        <p class="text-center text-slate-600 text-xs mono mb-6">
+          Se actualizará automáticamente cada 15 s · Usando endpoint <code>/admin-metrics-vmt/api</code>
+        </p>
+    
+        <!-- Raw JSON -->
+        <details class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+          <summary class="text-xs text-slate-400 cursor-pointer select-none mono">Ver JSON raw</summary>
+          <pre class="mt-3 text-xs text-green-400 mono overflow-auto" id="raw-json">{
+      "total_scans": {{ total_scans|safe }},
+      "vulnerable_clicks": {{ vulnerable_clicks|safe }},
+      "vulnerability_pct": {{ vulnerability_pct|safe }}
+    }</pre>
+        </details>
+    
+      </div>
+    
+      <script>
   // Auto-refresh cada 15 s (preserva el token de admin en la query string)
   const token = new URLSearchParams(window.location.search).get('token') || '';
 
