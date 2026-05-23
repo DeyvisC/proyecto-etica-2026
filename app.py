@@ -57,7 +57,7 @@ def _load_metrics() -> dict:
             return json.loads(METRICS_PATH.read_text())
         except (json.JSONDecodeError, OSError):
             pass
-    return {"total_scans": 0, "vulnerable_clicks": 0}
+    return {"total_scans": 0, "vulnerable_clicks": 0, "likes": 0, "dislikes": 0}
 
 def _save_metrics(metrics: dict) -> None:
     METRICS_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -78,7 +78,7 @@ class SurveyForm(FlaskForm):
     pass
 
 # ── Protección del dashboard admin ───────────────────────────────────────────
-ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "vmt-secret-2026")
+ADMIN_TOKEN = os.environ.get("ADMIN_TOKEN", "laschicassuperpoderosas")
 
 def require_admin(f):
     @wraps(f)
@@ -114,7 +114,6 @@ def submit():
     """
     Registra el clic vulnerable sin pedir tokens.
     """
-    # Quitamos la validación del form porque el @csrf.exempt ya hace el trabajo
     _increment("vulnerable_clicks")
     logger.info("¡Clic vulnerable registrado con éxito!")
     return redirect(url_for("leccion"))
@@ -131,26 +130,53 @@ def admin_metrics():
     metrics = _load_metrics()
     scans   = metrics.get("total_scans", 0)
     clicks  = metrics.get("vulnerable_clicks", 0)
+    likes   = metrics.get("likes", 0)
+    dislikes = metrics.get("dislikes", 0)
     
     pct = round((clicks / scans * 100), 1) if scans > 0 else 0.0
     
+    # AJUSTE: Pasamos también las variables de feedback a la plantilla
     return render_template(
         "admin.html", 
         total_scans=scans, 
         vulnerable_clicks=clicks, 
-        vulnerability_pct=pct
+        vulnerability_pct=pct,
+        likes=likes,
+        dislikes=dislikes
     )
 
 
 @app.route("/admin-metrics-vmt/api")
 @require_admin
 def admin_metrics_api():
-    """Endpoint JSON para el dashboard en tiempo real."""
+    """Endpoint JSON optimizado para el dashboard en tiempo real con feedback."""
     metrics = _load_metrics()
     scans   = metrics.get("total_scans", 0)
     clicks  = metrics.get("vulnerable_clicks", 0)
     pct     = round((clicks / scans * 100), 1) if scans > 0 else 0.0
-    return jsonify(total_scans=scans, vulnerable_clicks=clicks, vulnerability_pct=pct)
+    
+    # AJUSTE: El API ahora también responde con likes y dislikes para el JavaScript
+    return jsonify(
+        total_scans=scans, 
+        vulnerable_clicks=clicks, 
+        vulnerability_pct=pct,
+        likes=metrics.get("likes", 0),
+        dislikes=metrics.get("dislikes", 0)
+    )
+
+# ── Endpoint para registrar feedback (Like/Dislike) ───────────────────────────
+@app.route("/feedback", methods=["POST"])
+@csrf.exempt  # Permitimos que envíen el feedback rápido sin tokens pesados
+def feedback():
+    """Registra si a la víctima le gustó o no la lección educativa."""
+    data = request.get_json() or {}
+    voto = data.get("voto")  # Esperamos 'likes' o 'dislikes'
+
+    if voto in ["likes", "dislikes"]:
+        _increment(voto)
+        return jsonify({"status": "success", "message": f"{voto} registrado"}), 200
+    
+    return jsonify({"status": "error", "message": "Voto inválido"}), 400
 
 
 # ── Punto de entrada (dev) ────────────────────────────────────────────────────
