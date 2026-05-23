@@ -120,8 +120,41 @@
     </div>
 
     <!-- Back link / teacher note -->
-    <div class="text-center text-slate-400 text-xs">
-      <p class="mb-3">
+    <div class="max-w-md mx-auto mt-10 mb-8 p-6 bg-slate-800 rounded-2xl border border-slate-700 text-center shadow-lg">
+        <p class="text-sm font-semibold text-slate-300 mb-4">¿Te pareció útil esta advertencia educativa?</p>
+        
+        <div class="flex justify-center gap-6" id="feedback-container">
+            <button onclick="enviarVoto('likes')" class="flex items-center gap-2 px-4 py-2 bg-green-500/10 hover:bg-green-500/20 border border-green-500/30 text-green-400 rounded-xl transition font-medium">
+                👍 Útil
+            </button>
+            <button onclick="enviarVoto('dislikes')" class="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 rounded-xl transition font-medium">
+                👎 No me gustó
+            </button>
+        </div>
+        
+        <p id="feedback-msg" class="text-xs text-green-400 mt-4 hidden mono">¡Gracias por tu feedback académico! Tu respuesta fue registrada de forma anónima.</p>
+    </div>
+
+    <script>
+    async function enviarVoto(tipo) {
+        try {
+            const response = await fetch('/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ voto: tipo })
+            });
+            if (response.ok) {
+                document.getElementById('feedback-container').classList.add('hidden');
+                document.getElementById('feedback-msg').classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error("Error al votar:", error);
+        }
+    }
+    </script>
+
+    <div class="text-center text-slate-400 text-xs mt-10">
+      <p class="mb-4">
         Este experimento fue diseñado para el curso de <strong class="text-white">Ética en Tecnología</strong>.
         Ningún dato personal fue almacenado por el sistema.
       </p>
@@ -133,7 +166,6 @@
     </div>
   </main>
 
-  <!-- ══ FOOTER ══════════════════════════════════════════════════════════ -->
   <footer class="text-center text-slate-600 text-xs py-4 border-t border-slate-800">
     Simulación educativa · LimaSur Insights es una marca ficticia creada para este experimento ·
     No existe ninguna campaña de cupones real.
